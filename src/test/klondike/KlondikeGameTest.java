@@ -164,4 +164,27 @@ class KlondikeGameTest {
 		klondikeBadFoundations.foundations.getFirst().add(popMeForBadCards.stock.pop());
 		assertNotEquals(klondikeGood, klondikeBadFoundations);
 	}
+
+
+	@Test
+	void testDrawStock() {
+		Card toDraw = klondike.stock.peek();
+		assertTrue(klondike.wastePile.empty());
+		klondike.drawFromStock();
+
+		// intentional identity checks
+		boolean drawnCardIsInWastePile = klondike.wastePile.peek() == toDraw;
+		assertTrue(drawnCardIsInWastePile);
+		boolean drawnCardIsNotInStock = klondike.stock.peek() != toDraw;
+		assertTrue(drawnCardIsNotInStock);
+	}
+
+	@Test
+	void testDrawStockButStockIsEmpty() {
+		klondike.stock.clear();
+		// no EmptyStackException
+		assertDoesNotThrow(() -> klondike.drawFromStock());
+		// wastePile is the same
+		assertTrue(klondike.wastePile.empty());
+	}
 }

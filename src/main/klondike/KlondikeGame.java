@@ -53,6 +53,15 @@ public class KlondikeGame {
 		this(seed);
 	}
 
+
+	public void drawFromStock() {
+		if (!stock.empty()) {
+			wastePile.add(stock.pop());
+			wastePile.peek().flip();
+		}
+	}
+
+
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof KlondikeGame klondike))
