@@ -1,4 +1,4 @@
-package universal;
+package core;
 
 public class Card {
 	private final Suit suit;
@@ -32,6 +32,7 @@ public class Card {
 	public void flip() {
 		facingUp = !facingUp;
 	}
+
 
 	@Override
 	public boolean equals(Object obj) {

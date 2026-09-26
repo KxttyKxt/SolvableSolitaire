@@ -2,7 +2,7 @@ package klondike;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import universal.Card;
+import core.Card;
 
 import java.util.Stack;
 

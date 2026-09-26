@@ -1,7 +1,7 @@
 package klondike;
 
-import universal.Card;
-import universal.Deck;
+import core.Card;
+import core.Deck;
 
 import java.util.ArrayList;
 import java.util.List;
