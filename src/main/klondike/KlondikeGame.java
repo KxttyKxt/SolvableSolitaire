@@ -23,14 +23,13 @@ public class KlondikeGame {
 		this.stock = new Stack<>();
 		this.wastePile = new Stack<>();
 
-		this.foundations = new ArrayList<>();
+		this.foundations = new ArrayList<>(4);
 		foundations.add(new Stack<>());
 		foundations.add(new Stack<>());
 		foundations.add(new Stack<>());
 		foundations.add(new Stack<>());
 
-		tableaux = new ArrayList<>();
-
+		tableaux = new ArrayList<>(7);
 		for (int i = 1; i <= 7; i++) {
 			tableaux.add(new Stack<>());
 			Stack<Card> current = tableaux.get(i - 1);
@@ -38,6 +37,7 @@ public class KlondikeGame {
 			for (int j = 0; j < i; j++)
 				current.add(deck.pop());
 
+			// flip top card face-up
 			current.peek().flip();
 		}
 

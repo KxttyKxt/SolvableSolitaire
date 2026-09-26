@@ -73,4 +73,55 @@ class KlondikeGameTest {
 			assertTrue(emptyOrFacingDown);
 		}
 	}
+
+
+	@Test
+	void testStockSize() {
+		int expected = 24;
+		int actual = klondike.stock.size();
+		String failureMessage = String.format(
+				"Expected stock size is %d, but actual stock size is %d.",
+				expected,
+				actual
+		);
+		assertEquals(expected, actual, failureMessage);
+	}
+
+	@Test
+	void testStockFacesDown() {
+		// unlike the tableaux, stock should always face down
+		assertFalse(klondike.stock.peek().facingUp());
+	}
+
+
+	@Test
+	void testWastePileStartsEmpty() {
+		assertTrue(
+				klondike.wastePile.empty(),
+				"Klondike waste pile not empty."
+		);
+	}
+
+
+	@Test
+	void testFoundationsSize() {
+		int expected = 4;
+		int actual = klondike.foundations.size();
+		String failureMessage = String.format(
+				"Expected %d foundations, found %d",
+				expected,
+				actual
+		);
+		assertEquals(expected, actual, failureMessage);
+	}
+
+	@Test
+	void testEachFoundationIsEmpty() {
+		for (int i = 0; i < 4; i++) {
+			assertTrue(
+					klondike.foundations.get(i).empty(),
+					String.format("Klondike foundation %d not empty.", i)
+			);
+		}
+	}
 }
