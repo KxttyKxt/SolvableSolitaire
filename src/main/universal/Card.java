@@ -32,7 +32,16 @@ public class Card {
 	public void flip() {
 		facingUp = !facingUp;
 	}
-	
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Card card))
+			return false;
+
+		return this.face == card.face
+				&& this.suit == card.suit
+				&& this.facingUp == card.facingUp;
+	}
 
 	public enum Face {
 		ACE(1),

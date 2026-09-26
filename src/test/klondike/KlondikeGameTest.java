@@ -124,4 +124,44 @@ class KlondikeGameTest {
 			);
 		}
 	}
+
+
+	@Test
+	void testSameSeedKlondikesAreEqual() {
+		KlondikeGame klondike1 = new KlondikeGame(0);
+		KlondikeGame klondike2 = new KlondikeGame(0);
+		assertEquals(klondike1, klondike2);
+	}
+
+	@Test
+	void testDiffSeedKlondikesAreNotEqual() {
+		KlondikeGame klondike1 = new KlondikeGame(0);
+		KlondikeGame klondike2 = new KlondikeGame(1);
+		assertNotEquals(klondike1, klondike2);
+	}
+
+	@Test
+	void klondikeAndObjAreNotEqual() {
+		// I am specifically testing the first clause of Klondike#equals()
+		//noinspection MisorderedAssertEqualsArguments
+		assertNotEquals(klondike, new Object());
+	}
+
+	@Test
+	void deepTestKlondikesAreNotEqual() {
+		KlondikeGame klondikeGood = new KlondikeGame(0);
+		KlondikeGame popMeForBadCards = new KlondikeGame(1);
+
+		KlondikeGame klondikeBadStock = new KlondikeGame(0);
+		klondikeBadStock.stock = new Stack<>();
+		assertNotEquals(klondikeGood, klondikeBadStock);
+
+		KlondikeGame klondikeBadWaste = new KlondikeGame(0);
+		klondikeBadWaste.wastePile.add(popMeForBadCards.stock.pop());
+		assertNotEquals(klondikeGood, klondikeBadWaste);
+
+		KlondikeGame klondikeBadFoundations = new KlondikeGame(0);
+		klondikeBadFoundations.foundations.getFirst().add(popMeForBadCards.stock.pop());
+		assertNotEquals(klondikeGood, klondikeBadFoundations);
+	}
 }

@@ -3,7 +3,10 @@ package klondike;
 import universal.Card;
 import universal.Deck;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Stack;
 
 public class KlondikeGame {
 	// for informational purposes
@@ -48,5 +51,17 @@ public class KlondikeGame {
 	public KlondikeGame() {
 		long seed = System.currentTimeMillis();
 		this(seed);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof KlondikeGame klondike))
+			return false;
+
+		return this.seed == klondike.seed
+				&& this.stock.equals(klondike.stock)
+				&& this.wastePile.equals(klondike.wastePile)
+				&& this.foundations.equals(klondike.foundations)
+				&& this.tableaux.equals(klondike.tableaux);
 	}
 }
