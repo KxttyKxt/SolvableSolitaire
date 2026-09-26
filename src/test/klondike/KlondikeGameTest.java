@@ -57,9 +57,8 @@ class KlondikeGameTest {
 
 	@Test
 	void testTableauxTopCardsFaceUp() {
-		for (Stack<Card> column : klondike.tableaux) {
+		for (Stack<Card> column : klondike.tableaux)
 			assertTrue(column.peek().facingUp());
-		}
 	}
 
 	@Test
@@ -69,8 +68,8 @@ class KlondikeGameTest {
 			// remove the top card
 			column.pop();
 			// the next one should be flipped over, if there is a next one
-			boolean emptyOrFacingDown = column.empty() || !column.peek().facingUp();
-			assertTrue(emptyOrFacingDown);
+			boolean notFaceUp = column.empty() || !column.peek().facingUp();
+			assertTrue(notFaceUp);
 		}
 	}
 
@@ -150,18 +149,18 @@ class KlondikeGameTest {
 	@Test
 	void deepTestKlondikesAreNotEqual() {
 		KlondikeGame klondikeGood = new KlondikeGame(0);
-		KlondikeGame popMeForBadCards = new KlondikeGame(1);
+		KlondikeGame popDeck = new KlondikeGame(1);
 
 		KlondikeGame klondikeBadStock = new KlondikeGame(0);
 		klondikeBadStock.stock = new Stack<>();
 		assertNotEquals(klondikeGood, klondikeBadStock);
 
 		KlondikeGame klondikeBadWaste = new KlondikeGame(0);
-		klondikeBadWaste.wastePile.add(popMeForBadCards.stock.pop());
+		klondikeBadWaste.wastePile.add(popDeck.stock.pop());
 		assertNotEquals(klondikeGood, klondikeBadWaste);
 
 		KlondikeGame klondikeBadFoundations = new KlondikeGame(0);
-		klondikeBadFoundations.foundations.getFirst().add(popMeForBadCards.stock.pop());
+		klondikeBadFoundations.foundations.getFirst().add(popDeck.stock.pop());
 		assertNotEquals(klondikeGood, klondikeBadFoundations);
 	}
 
