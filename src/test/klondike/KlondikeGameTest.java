@@ -85,18 +85,18 @@ class KlondikeGameTest {
 
 	@Test
 	void testTableauxTopCardsFaceUp() {
-		for (Stack<Card> column : klondike.tableaux)
-			assertTrue(column.peek().facingUp());
+		for (List<Card> column : klondike.tableaux)
+			assertTrue(column.getFirst().facingUp());
 	}
 
 	@Test
 	void testBuriedTableauxCardsFaceDown() {
 		// destructive, hence @BeforeEach
-		for (Stack<Card> column : klondike.tableaux) {
+		for (List<Card> column : klondike.tableaux) {
 			// remove the top card
-			column.pop();
+			column.removeFirst();
 			// the next one should be flipped over, if there is a next one
-			boolean notFaceUp = column.empty() || !column.peek().facingUp();
+			boolean notFaceUp = column.isEmpty() || !column.getFirst().facingUp();
 			assertTrue(notFaceUp);
 		}
 	}

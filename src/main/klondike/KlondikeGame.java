@@ -38,7 +38,7 @@ public class KlondikeGame {
 	Stack<Card> stockPile;
 	Stack<Card> wastePile;
 	List<Stack<Card>> foundations;
-	List<Stack<Card>> tableaux;
+	List<List<Card>> tableaux;
 
 	public KlondikeGame(long seed) {
 		this.seed = seed;
@@ -56,14 +56,14 @@ public class KlondikeGame {
 
 		tableaux = new ArrayList<>(7);
 		for (int i = 1; i <= 7; i++) {
-			tableaux.add(new Stack<>());
-			Stack<Card> current = tableaux.get(i - 1);
+			tableaux.add(new ArrayList<>());
+			List<Card> current = tableaux.get(i - 1);
 
 			for (int j = 0; j < i; j++)
 				current.add(deck.pop());
 
 			// flip top card face-up
-			current.peek().flip();
+			current.getFirst().flip();
 		}
 
 		while (!deck.isEmpty())
@@ -94,7 +94,7 @@ public class KlondikeGame {
 		}
 		copy.tableaux = new ArrayList<>(7);
 		for (int i = 0; i < 7; i++) {
-			copy.tableaux.add(new Stack<>());
+			copy.tableaux.add(new ArrayList<>());
 			copy.tableaux.get(i).addAll(this.tableaux.get(i));
 		}
 
