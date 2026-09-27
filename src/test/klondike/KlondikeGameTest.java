@@ -265,7 +265,7 @@ class KlondikeGameTest {
 
 
 	@Test
-	void testMoveFromStockAceToFirstFoundation() {
+	void testMoveWasteAceToFirstFoundation() {
 		Card card = new Card(Card.Suit.HEARTS, Card.Face.ACE);
 		Stack<Card> firstFoundation = klondike.foundations.getFirst();
 
@@ -285,7 +285,7 @@ class KlondikeGameTest {
 	}
 
 	@Test
-	void testMoveFromStockCardToAcedFirstFoundation() {
+	void testMoveWasteCardToAcedFirstFoundation() {
 		quickMove(new Card(Card.Suit.HEARTS, Card.Face.ACE));
 		boolean success = quickMove(new Card(Card.Suit.HEARTS, Card.Face.TWO));
 		assertTrue(success);
@@ -293,7 +293,7 @@ class KlondikeGameTest {
 	}
 
 	@Test
-	void testMoveFromStockAllAces() {
+	void testMoveWasteAllAces() {
 		for (Card ace : aces)
 			assertTrue(quickMove(ace));
 
@@ -312,14 +312,14 @@ class KlondikeGameTest {
 	}
 
 	@Test
-	void testMoveFromStockCardWhenWastePileIsEmpty() {
+	void testMoveWasteCardWhenWastePileIsEmpty() {
 		assertEmpty(klondike.wastePile);
 		boolean success = klondike.moveWasteCardToAFoundation();
 		assertFalse(success);
 	}
 
 	@Test
-	void testMoveFromStockCardOfIncorrectSuitButCorrectValue() {
+	void testMoveWasteCardOfIncorrectSuitButCorrectValue() {
 		Card aceOfSpades = new Card(Card.Suit.SPADES, Card.Face.ACE);
 
 		boolean success = quickMove(aceOfSpades);
@@ -335,7 +335,7 @@ class KlondikeGameTest {
 	}
 
 	@Test
-	void testMoveFromStockCardOfCorrectSuitButIncorrectValue() {
+	void testMoveWasteCardOfCorrectSuitButIncorrectValue() {
 		boolean success = quickMove(new Card(Card.Suit.SPADES, Card.Face.ACE));
 		assertTrue(success);
 

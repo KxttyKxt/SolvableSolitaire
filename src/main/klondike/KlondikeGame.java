@@ -102,6 +102,7 @@ public class KlondikeGame {
 	}
 
 
+	// *** actionable methods ***
 	public void drawFromStockPile() {
 		if (!stockPile.empty()) {
 			wastePile.add(stockPile.pop());
@@ -114,7 +115,6 @@ public class KlondikeGame {
 			while (!wastePile.empty())
 				stockPile.add(wastePile.pop());
 	}
-
 
 	/// @return true if the stock pile card was moved to a foundation,
 	/// 	or false if no foundation can accept the stock pile card.
@@ -130,6 +130,8 @@ public class KlondikeGame {
 		return true;
 	}
 
+
+	// *** helper methods ***
 	private int findAcceptableFoundationForCard(Card cardToAccept) {
 		for (int i = 0; i < 4; i++)
 			if (foundationCanAcceptCard(cardToAccept, i))
@@ -151,6 +153,7 @@ public class KlondikeGame {
 	}
 
 
+	// *** overrides ***
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof KlondikeGame klondike))
