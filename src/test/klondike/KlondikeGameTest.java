@@ -11,6 +11,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class KlondikeGameTest {
 	private KlondikeGame klondike;
 
+	private static <T> Stack<T> copyStack(Stack<T> stack) {
+		Stack<T> copy = new Stack<>();
+		copy.addAll(stack);
+		return copy;
+	}
 
 	@BeforeEach
 	void setup() {
@@ -77,7 +82,7 @@ class KlondikeGameTest {
 	@Test
 	void testStockSize() {
 		int expected = 24;
-		int actual = klondike.stock.size();
+		int actual = klondike.stockPile.size();
 		String failureMessage = String.format(
 				"Expected stock size is %d, but actual stock size is %d.",
 				expected,
@@ -89,7 +94,7 @@ class KlondikeGameTest {
 	@Test
 	void testStockFacesDown() {
 		// unlike the tableaux, stock should always face down
-		assertFalse(klondike.stock.peek().facingUp());
+		assertFalse(klondike.stockPile.peek().facingUp());
 	}
 
 
@@ -115,7 +120,7 @@ class KlondikeGameTest {
 	}
 
 	@Test
-	void testEachFoundationIsEmpty() {
+	void testEachFoundationStartsEmpty() {
 		for (int i = 0; i < 4; i++) {
 			assertTrue(
 					klondike.foundations.get(i).empty(),
@@ -152,38 +157,86 @@ class KlondikeGameTest {
 		KlondikeGame popDeck = new KlondikeGame(1);
 
 		KlondikeGame klondikeBadStock = new KlondikeGame(0);
-		klondikeBadStock.stock = new Stack<>();
+		klondikeBadStock.stockPile = new Stack<>();
 		assertNotEquals(klondikeGood, klondikeBadStock);
 
 		KlondikeGame klondikeBadWaste = new KlondikeGame(0);
-		klondikeBadWaste.wastePile.add(popDeck.stock.pop());
+		klondikeBadWaste.wastePile.add(popDeck.stockPile.pop());
 		assertNotEquals(klondikeGood, klondikeBadWaste);
 
 		KlondikeGame klondikeBadFoundations = new KlondikeGame(0);
-		klondikeBadFoundations.foundations.getFirst().add(popDeck.stock.pop());
+		klondikeBadFoundations.foundations.getFirst().add(popDeck.stockPile.pop());
 		assertNotEquals(klondikeGood, klondikeBadFoundations);
 	}
 
 
 	@Test
 	void testDrawStock() {
-		Card toDraw = klondike.stock.peek();
+		Card toDraw = klondike.stockPile.peek();
 		assertTrue(klondike.wastePile.empty());
-		klondike.drawFromStock();
+		klondike.drawFromStockPile();
 
 		// intentional identity checks
 		boolean drawnCardIsInWastePile = klondike.wastePile.peek() == toDraw;
 		assertTrue(drawnCardIsInWastePile);
-		boolean drawnCardIsNotInStock = klondike.stock.peek() != toDraw;
+		boolean drawnCardIsNotInStock = klondike.stockPile.peek() != toDraw;
 		assertTrue(drawnCardIsNotInStock);
 	}
 
 	@Test
 	void testDrawStockButStockIsEmpty() {
-		klondike.stock.clear();
+		klondike.stockPile.clear();
 		// no EmptyStackException
-		assertDoesNotThrow(() -> klondike.drawFromStock());
+		assertDoesNotThrow(() -> klondike.drawFromStockPile());
 		// wastePile is the same
+		assertTrue(klondike.wastePile.empty());
+	}
+
+
+	@Test
+	void testRecycleFailsWhenStockIsNotEmpty() {
+		// arbitrarily add some cards to the waste pile
+		klondike.drawFromStockPile();
+		klondike.drawFromStockPile();
+
+		// deep-copy stacks for reference
+		Stack<Card> stockBefore = copyStack(klondike.stockPile);
+		Stack<Card> wasteBefore = copyStack(klondike.wastePile);
+
+		// this should not do anything
+		klondike.recycleWasteIntoStock();
+
+		// assert no effect
+		assertEquals(stockBefore, klondike.stockPile);
+		assertEquals(wasteBefore, klondike.wastePile);
+	}
+
+	@Test
+	void testRecycleDoesNothingWhenWasteIsEmpty() {
+		// deep-copy stock pile for reference
+		Stack<Card> stockBefore = copyStack(klondike.stockPile);
+		assertTrue(klondike.wastePile.empty());
+
+		// this should not do anything
+		klondike.recycleWasteIntoStock();
+
+		// assert no effect
+		assertEquals(stockBefore, klondike.stockPile);
+		assertTrue(klondike.wastePile.empty());
+	}
+
+	@Test
+	void testRecycleCorrectly() {
+		Stack<Card> initialStockPile = copyStack(klondike.stockPile);
+
+		// empty out stock pile into waste pile
+		while (!klondike.stockPile.empty()) {
+			klondike.drawFromStockPile();
+		}
+		assertTrue(klondike.stockPile.empty());
+
+		klondike.recycleWasteIntoStock();
+		assertEquals(initialStockPile, klondike.stockPile);
 		assertTrue(klondike.wastePile.empty());
 	}
 

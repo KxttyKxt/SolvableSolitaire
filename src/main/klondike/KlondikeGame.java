@@ -8,12 +8,34 @@ import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
+/// Klondike is the most typical form of Solitaire, especially in America.
+/// Solitaire is actually a tabletop blanket genre, I have learned,
+/// but when most people say Solitaire, they mean Klondike.
+///
+/// Klondike involves:
+/// - a stock (draw pile)
+/// - a waste pile (where drawn cards go)
+/// - four "foundation" piles, and
+/// - seven "tableau" columns
+///
+/// The goal is to clear all tableaux by placing the cards into the foundation piles.
+/// Foundations are empty piles that must follow a suit sequentially from ace to king.
+/// Cards placed into foundations can come from the tableaux or from the waste pile.
+/// Cards can also be moved between tableaux,
+/// but when moving a card or cards onto a tableau, the bottom card must be:
+/// 1. a different color than the card it is placed onto, and
+/// 2. one number/value above or below the card it is placed onto
+///
+/// Guide used for reference -
+/// [_What Is Klondike Solitaire: The Definitive Guide_](https://thesolitaire.com/blog/what-is-klondike-solitaire/)
 public class KlondikeGame {
-	// stored for informational purposes
+	/// stored for informational purposes.
+	/// having a seed for shuffling the deck makes the game deterministic and
+	/// replicable.
 	public final long seed;
 
 	// piles
-	Stack<Card> stock;
+	Stack<Card> stockPile;
 	Stack<Card> wastePile;
 	List<Stack<Card>> foundations;
 	List<Stack<Card>> tableaux;
@@ -23,7 +45,7 @@ public class KlondikeGame {
 		Random random = new Random(seed);
 		Stack<Card> deck = Deck.shuffleCards(Deck.newDeck(), random);
 
-		this.stock = new Stack<>();
+		this.stockPile = new Stack<>();
 		this.wastePile = new Stack<>();
 
 		this.foundations = new ArrayList<>(4);
@@ -45,7 +67,7 @@ public class KlondikeGame {
 		}
 
 		while (!deck.isEmpty())
-			stock.add(deck.pop());
+			stockPile.add(deck.pop());
 	}
 
 	public KlondikeGame() {
@@ -61,8 +83,8 @@ public class KlondikeGame {
 	public KlondikeGame copy() {
 		KlondikeGame copy = new KlondikeGame(this.seed);
 
-		copy.stock = new Stack<>();
-		copy.stock.addAll(this.stock);
+		copy.stockPile = new Stack<>();
+		copy.stockPile.addAll(this.stockPile);
 		copy.wastePile = new Stack<>();
 		copy.wastePile.addAll(this.wastePile);
 		copy.foundations = new ArrayList<>(4);
@@ -80,11 +102,17 @@ public class KlondikeGame {
 	}
 
 
-	public void drawFromStock() {
-		if (!stock.empty()) {
-			wastePile.add(stock.pop());
+	public void drawFromStockPile() {
+		if (!stockPile.empty()) {
+			wastePile.add(stockPile.pop());
 			wastePile.peek().flip();
 		}
+	}
+
+	public void recycleWasteIntoStock() {
+		if (stockPile.empty())
+			while (!wastePile.empty())
+				stockPile.add(wastePile.pop());
 	}
 
 
@@ -94,7 +122,7 @@ public class KlondikeGame {
 			return false;
 
 		return this.seed == klondike.seed
-				&& this.stock.equals(klondike.stock)
+				&& this.stockPile.equals(klondike.stockPile)
 				&& this.wastePile.equals(klondike.wastePile)
 				&& this.foundations.equals(klondike.foundations)
 				&& this.tableaux.equals(klondike.tableaux);
