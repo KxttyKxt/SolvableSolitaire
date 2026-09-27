@@ -3,10 +3,7 @@ package klondike;
 import core.Card;
 import core.Deck;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Stack;
+import java.util.*;
 
 /// Klondike is the most typical form of Solitaire, especially in America.
 /// Solitaire is actually a tabletop blanket genre, I have learned,
@@ -35,24 +32,24 @@ public class KlondikeGame {
 	public final long seed;
 
 	// piles
-	Stack<Card> stockPile;
-	Stack<Card> wastePile;
-	List<Stack<Card>> foundations;
+	Deque<Card> stockPile;
+	Deque<Card> wastePile;
+	List<Deque<Card>> foundations;
 	List<List<Card>> tableaux;
 
 	public KlondikeGame(long seed) {
 		this.seed = seed;
 		Random random = new Random(seed);
-		Stack<Card> deck = Deck.shuffleCards(Deck.newDeck(), random);
+		Deque<Card> deck = Deck.shuffledDeck(random);
 
-		this.stockPile = new Stack<>();
-		this.wastePile = new Stack<>();
+		this.stockPile = new ArrayDeque<>();
+		this.wastePile = new ArrayDeque<>();
 
 		this.foundations = new ArrayList<>(4);
-		foundations.add(new Stack<>());
-		foundations.add(new Stack<>());
-		foundations.add(new Stack<>());
-		foundations.add(new Stack<>());
+		foundations.add(new ArrayDeque<>());
+		foundations.add(new ArrayDeque<>());
+		foundations.add(new ArrayDeque<>());
+		foundations.add(new ArrayDeque<>());
 
 		tableaux = new ArrayList<>(7);
 		for (int i = 1; i <= 7; i++) {
@@ -60,14 +57,14 @@ public class KlondikeGame {
 			List<Card> current = tableaux.get(i - 1);
 
 			for (int j = 0; j < i; j++)
-				current.add(deck.pop());
+				current.addFirst(deck.removeFirst());
 
 			// flip top card face-up
 			current.getFirst().flip();
 		}
 
 		while (!deck.isEmpty())
-			stockPile.add(deck.pop());
+			stockPile.addFirst(deck.removeFirst());
 	}
 
 	public KlondikeGame() {
@@ -83,13 +80,13 @@ public class KlondikeGame {
 	public KlondikeGame copy() {
 		KlondikeGame copy = new KlondikeGame(this.seed);
 
-		copy.stockPile = new Stack<>();
+		copy.stockPile = new ArrayDeque<>();
 		copy.stockPile.addAll(this.stockPile);
-		copy.wastePile = new Stack<>();
+		copy.wastePile = new ArrayDeque<>();
 		copy.wastePile.addAll(this.wastePile);
 		copy.foundations = new ArrayList<>(4);
 		for (int i = 0; i < 4; i++) {
-			copy.foundations.add(new Stack<>());
+			copy.foundations.add(new ArrayDeque<>());
 			copy.foundations.get(i).addAll(this.foundations.get(i));
 		}
 		copy.tableaux = new ArrayList<>(7);
@@ -104,29 +101,29 @@ public class KlondikeGame {
 
 	// *** actionable methods ***
 	public void drawFromStockPile() {
-		if (!stockPile.empty()) {
-			wastePile.add(stockPile.pop());
-			wastePile.peek().flip();
+		if (!stockPile.isEmpty()) {
+			wastePile.addFirst(stockPile.removeFirst());
+			wastePile.getFirst().flip();
 		}
 	}
 
 	public void recycleWasteIntoStock() {
-		if (stockPile.empty())
-			while (!wastePile.empty())
-				stockPile.add(wastePile.pop());
+		if (stockPile.isEmpty())
+			while (!wastePile.isEmpty())
+				stockPile.addFirst(wastePile.removeFirst());
 	}
 
 	/// @return true if the stock pile card was moved to a foundation,
 	/// 	or false if no foundation can accept the stock pile card.
 	public boolean moveWasteCardToAFoundation() {
-		if (wastePile.empty())
+		if (wastePile.isEmpty())
 			return false;
 
-		int index = findAcceptableFoundationForCard(wastePile.peek());
+		int index = findAcceptableFoundationForCard(wastePile.getFirst());
 		if (index == -1)
 			return false;
 
-		foundations.get(index).add(wastePile.pop());
+		foundations.get(index).addFirst(wastePile.removeFirst());
 		return true;
 	}
 
@@ -141,10 +138,10 @@ public class KlondikeGame {
 	}
 
 	private boolean foundationCanAcceptCard(Card cardToAccept, int foundationIndex) {
-		if (foundations.get(foundationIndex).empty())
+		if (foundations.get(foundationIndex).isEmpty())
 			return cardToAccept.face() == Card.Face.ACE;
 
-		Card topCard = foundations.get(foundationIndex).peek();
+		Card topCard = foundations.get(foundationIndex).getFirst();
 
 		if (cardToAccept.suit() != topCard.suit())
 			return false;
@@ -159,10 +156,23 @@ public class KlondikeGame {
 		if (!(obj instanceof KlondikeGame klondike))
 			return false;
 
-		return this.seed == klondike.seed
-				&& this.stockPile.equals(klondike.stockPile)
-				&& this.wastePile.equals(klondike.wastePile)
-				&& this.foundations.equals(klondike.foundations)
+		// foundations is a difficult check
+		boolean allButFoundations = this.seed == klondike.seed
+				&& Deck.equals(this.stockPile, klondike.stockPile)
+				&& Deck.equals(this.wastePile, klondike.wastePile)
 				&& this.tableaux.equals(klondike.tableaux);
+
+		if (!allButFoundations)
+			return false;
+
+		for (int i = 0; i < 4; i++) {
+			if (!Deck.equals(
+					this.foundations.get(i),
+					klondike.foundations.get(i)
+			))
+				return false;
+		}
+
+		return true;
 	}
 }

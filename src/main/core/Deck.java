@@ -3,7 +3,31 @@ package core;
 import java.util.*;
 
 public class Deck {
-	public static Card[] newDeck() {
+	public static Deque<Card> newDeck() {
+		return new ArrayDeque<>(Arrays.asList(arrayDeck()));
+	}
+
+	public static Deque<Card> shuffledDeck(Random random) {
+		List<Card> cardsList = Arrays.asList(arrayDeck());
+		Collections.shuffle(cardsList, random);
+		return new ArrayDeque<>(cardsList);
+	}
+
+	public static boolean equals(Deque<Card> deck1, Deque<Card> deck2) {
+		if (deck1.size() != deck2.size())
+			return false;
+
+		Iterator<Card> it1 = deck1.iterator();
+		Iterator<Card> it2 = deck2.iterator();
+
+		while (it1.hasNext())
+			if (!it1.next().equals(it2.next()))
+				return false;
+
+		return true;
+	}
+
+	private static Card[] arrayDeck() {
 		return new Card[]{
 				new Card(Card.Suit.HEARTS, Card.Face.ACE),
 				new Card(Card.Suit.HEARTS, Card.Face.TWO),
@@ -61,15 +85,5 @@ public class Deck {
 				new Card(Card.Suit.CLUBS, Card.Face.QUEEN),
 				new Card(Card.Suit.CLUBS, Card.Face.KING),
 		};
-	}
-
-	public static Stack<Card> shuffleCards(Card[] cards, Random random) {
-		List<Card> cardsList = Arrays.asList(cards);
-		Collections.shuffle(cardsList, random);
-
-		Stack<Card> toReturn = new Stack<>();
-		toReturn.addAll(cardsList);
-
-		return toReturn;
 	}
 }
