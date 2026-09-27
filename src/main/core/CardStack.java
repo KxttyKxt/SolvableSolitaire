@@ -2,23 +2,79 @@ package core;
 
 import java.util.*;
 
-public class Deck {
-	public static Deque<Card> newDeck() {
-		return new ArrayDeque<>(Arrays.asList(arrayDeck()));
+public class CardStack {
+	private final Deque<Card> cards;
+
+	public static CardStack withNewDeck() {
+		CardStack cardStack = new CardStack();
+		cardStack.cards.addAll(newDeck());
+		return cardStack;
 	}
 
-	public static Deque<Card> shuffledDeck(Random random) {
-		List<Card> cardsList = Arrays.asList(arrayDeck());
-		Collections.shuffle(cardsList, random);
-		return new ArrayDeque<>(cardsList);
+	public static CardStack withShuffledDeck(Random random) {
+		CardStack cardStack = new CardStack();
+
+		List<Card> freshCards = newDeck();
+		Collections.shuffle(freshCards, random);
+		cardStack.cards.addAll(freshCards);
+
+		return cardStack;
 	}
 
-	public static boolean equals(Deque<Card> deck1, Deque<Card> deck2) {
-		if (deck1.size() != deck2.size())
+	public CardStack() {
+		cards = new ArrayDeque<>();
+	}
+
+	private CardStack(Collection<Card> cards) {
+		this.cards = new ArrayDeque<>(cards);
+	}
+
+	public CardStack copy() {
+		return new CardStack(this.cards);
+	}
+
+
+	public void push(Card card) {
+		cards.addFirst(card);
+	}
+
+	public Card pop() {
+		return cards.removeFirst();
+	}
+
+	public Card peek() {
+		return cards.getFirst();
+	}
+
+
+	public void addAll(CardStack stack) {
+		this.cards.addAll(stack.cards);
+	}
+
+	public void clear() {
+		cards.clear();
+	}
+
+
+	public int size() {
+		return cards.size();
+	}
+
+	public boolean empty() {
+		return cards.isEmpty();
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof CardStack cardStack))
 			return false;
 
-		Iterator<Card> it1 = deck1.iterator();
-		Iterator<Card> it2 = deck2.iterator();
+		if (this.cards.size() != cardStack.cards.size())
+			return false;
+
+		Iterator<Card> it1 = this.cards.iterator();
+		Iterator<Card> it2 = cardStack.cards.iterator();
 
 		while (it1.hasNext())
 			if (!it1.next().equals(it2.next()))
@@ -27,8 +83,9 @@ public class Deck {
 		return true;
 	}
 
-	private static Card[] arrayDeck() {
-		return new Card[]{
+
+	private static List<Card> newDeck() {
+		return Arrays.asList(
 				new Card(Card.Suit.HEARTS, Card.Face.ACE),
 				new Card(Card.Suit.HEARTS, Card.Face.TWO),
 				new Card(Card.Suit.HEARTS, Card.Face.THREE),
@@ -83,7 +140,7 @@ public class Deck {
 				new Card(Card.Suit.CLUBS, Card.Face.TEN),
 				new Card(Card.Suit.CLUBS, Card.Face.JACK),
 				new Card(Card.Suit.CLUBS, Card.Face.QUEEN),
-				new Card(Card.Suit.CLUBS, Card.Face.KING),
-		};
+				new Card(Card.Suit.CLUBS, Card.Face.KING)
+		);
 	}
 }

@@ -1,6 +1,6 @@
 package klondike;
 
-import core.Deck;
+import core.CardStack;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import core.Card;
@@ -26,23 +26,14 @@ class KlondikeGameTest {
 		);
 	}
 
-
-	private static <T> Deque<T> copyDeque(Deque<T> deque) {
-		return new ArrayDeque<>(deque);
-	}
-
 	private static boolean quickMove(Card card) {
-		klondike.stockPile.addFirst(card);
+		klondike.stockPile.push(card);
 		klondike.drawFromStockPile();
 		return klondike.moveWasteCardToAFoundation();
 	}
 
-	<T> void assertEmpty(Collection<T> collection) {
-		assertTrue(collection.isEmpty());
-	}
-
-	void assertDequesEqual (Deque<Card> deck1, Deque<Card> deck2) {
-		assertTrue(Deck.equals(deck1, deck2));
+	void assertEmpty(CardStack cards) {
+		assertTrue(cards.empty());
 	}
 
 
@@ -117,7 +108,7 @@ class KlondikeGameTest {
 	@Test
 	void testStockFacesDown() {
 		// unlike the tableaux, stock should always face down
-		Card peeked = klondike.stockPile.getFirst();
+		Card peeked = klondike.stockPile.peek();
 		assertFalse(peeked.facingUp());
 	}
 
@@ -125,7 +116,7 @@ class KlondikeGameTest {
 	@Test
 	void testWastePileStartsEmpty() {
 		assertTrue(
-				klondike.wastePile.isEmpty(),
+				klondike.wastePile.empty(),
 				"Klondike waste pile not empty."
 		);
 	}
@@ -147,7 +138,7 @@ class KlondikeGameTest {
 	void testEachFoundationStartsEmpty() {
 		for (int i = 0; i < 4; i++) {
 			assertTrue(
-					klondike.foundations.get(i).isEmpty(),
+					klondike.foundations.get(i).empty(),
 					String.format("Klondike foundation %d not empty.", i)
 			);
 		}
@@ -180,15 +171,19 @@ class KlondikeGameTest {
 		KlondikeGame klondikeGood = new KlondikeGame(0);
 
 		KlondikeGame klondikeBadStock = new KlondikeGame(0);
-		klondikeBadStock.stockPile = new ArrayDeque<>();
+		klondikeBadStock.stockPile = new CardStack();
 		assertNotEquals(klondikeGood, klondikeBadStock);
 
 		KlondikeGame klondikeBadWaste = new KlondikeGame(0);
-		klondikeBadWaste.wastePile.addFirst(new Card());
+		klondikeBadWaste.wastePile.push(new Card());
 		assertNotEquals(klondikeGood, klondikeBadWaste);
 
+		KlondikeGame klondikeBadTableau = new KlondikeGame(0);
+		klondikeBadTableau.tableaux.getFirst().addFirst(new Card());
+		assertNotEquals(klondikeGood, klondikeBadTableau);
+
 		KlondikeGame klondikeBadFoundations = new KlondikeGame(0);
-		klondikeBadFoundations.foundations.getFirst().addFirst(new Card());
+		klondikeBadFoundations.foundations.getFirst().push(new Card());
 		assertNotEquals(klondikeGood, klondikeBadFoundations);
 	}
 
@@ -223,43 +218,43 @@ class KlondikeGameTest {
 		klondike.drawFromStockPile();
 
 		// deep-copy stacks for reference
-		Deque<Card> stockBefore = copyDeque(klondike.stockPile);
-		Deque<Card> wasteBefore = copyDeque(klondike.wastePile);
+		CardStack stockBefore = klondike.stockPile.copy();
+		CardStack wasteBefore = klondike.wastePile.copy();
 
 		// this should not do anything
 		klondike.recycleWasteIntoStock();
 
 		// assert no effect
-		assertDequesEqual(stockBefore, klondike.stockPile);
-		assertDequesEqual(wasteBefore, klondike.wastePile);
+		assertEquals(stockBefore, klondike.stockPile);
+		assertEquals(wasteBefore, klondike.wastePile);
 	}
 
 	@Test
 	void testRecycleDoesNothingWhenWasteIsEmpty() {
 		// deep-copy stock pile for reference
-		Deque<Card> stockBefore = copyDeque(klondike.stockPile);
+		CardStack stockBefore = klondike.stockPile.copy();
 		assertEmpty(klondike.wastePile);
 
 		// this should not do anything
 		klondike.recycleWasteIntoStock();
 
 		// assert no effect
-		assertDequesEqual(stockBefore, klondike.stockPile);
+		assertEquals(stockBefore, klondike.stockPile);
 		assertEmpty(klondike.wastePile);
 	}
 
 	@Test
 	void testRecycleWorksCorrectly() {
-		Deque<Card> initialStockPile = copyDeque(klondike.stockPile);
+		CardStack initialStockPile = klondike.stockPile.copy();
 
 		// empty out stock pile into waste pile
-		while (!klondike.stockPile.isEmpty()) {
+		while (!klondike.stockPile.empty()) {
 			klondike.drawFromStockPile();
 		}
 		assertEmpty(klondike.stockPile);
 
 		klondike.recycleWasteIntoStock();
-		assertDequesEqual(initialStockPile, klondike.stockPile);
+		assertEquals(initialStockPile, klondike.stockPile);
 		assertEmpty(klondike.wastePile);
 	}
 
@@ -267,13 +262,13 @@ class KlondikeGameTest {
 	@Test
 	void testMoveWasteAceToFirstFoundation() {
 		Card card = new Card(Card.Suit.HEARTS, Card.Face.ACE);
-		Deque<Card> firstFoundation = klondike.foundations.getFirst();
+		CardStack firstFoundation = klondike.foundations.getFirst();
 
 		assertEmpty(firstFoundation);
 
 		// there's a helper for this, but I want to test its functionality
 		// directly before relying on it
-		klondike.stockPile.addFirst(card);
+		klondike.stockPile.push(card);
 		klondike.drawFromStockPile();
 		boolean success = klondike.moveWasteCardToAFoundation();
 
@@ -298,16 +293,16 @@ class KlondikeGameTest {
 			assertTrue(quickMove(ace));
 
 		List<Card.Suit> checkedSuits = new ArrayList<>(4);
-		for (Deque<Card> foundation : klondike.foundations) {
+		for (CardStack foundation : klondike.foundations) {
 			assertEquals(1, foundation.size());
-			Card card = foundation.getFirst();
+			Card card = foundation.peek();
 
 			// make sure all cards are aces
 			assertEquals(Card.Face.ACE, card.face());
 
 			// make sure all suits are unique
 			assertFalse(checkedSuits.contains(card.suit()));
-			checkedSuits.addFirst(card.suit());
+			checkedSuits.add(card.suit());
 		}
 	}
 
@@ -326,7 +321,7 @@ class KlondikeGameTest {
 		assertTrue(success);
 
 		Card twoOfHearts = new Card(Card.Suit.HEARTS, Card.Face.TWO);
-		klondike.stockPile.addFirst(twoOfHearts);
+		klondike.stockPile.push(twoOfHearts);
 		klondike.drawFromStockPile();
 
 		success = klondike.moveWasteCardToAFoundation();

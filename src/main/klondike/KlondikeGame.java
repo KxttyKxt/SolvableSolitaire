@@ -1,7 +1,7 @@
 package klondike;
 
 import core.Card;
-import core.Deck;
+import core.CardStack;
 
 import java.util.*;
 
@@ -32,24 +32,24 @@ public class KlondikeGame {
 	public final long seed;
 
 	// piles
-	Deque<Card> stockPile;
-	Deque<Card> wastePile;
-	List<Deque<Card>> foundations;
+	CardStack stockPile;
+	CardStack wastePile;
+	List<CardStack> foundations;
 	List<List<Card>> tableaux;
 
 	public KlondikeGame(long seed) {
 		this.seed = seed;
 		Random random = new Random(seed);
-		Deque<Card> deck = Deck.shuffledDeck(random);
+		CardStack deck = CardStack.withShuffledDeck(random);
 
-		this.stockPile = new ArrayDeque<>();
-		this.wastePile = new ArrayDeque<>();
+		this.stockPile = new CardStack();
+		this.wastePile = new CardStack();
 
 		this.foundations = new ArrayList<>(4);
-		foundations.add(new ArrayDeque<>());
-		foundations.add(new ArrayDeque<>());
-		foundations.add(new ArrayDeque<>());
-		foundations.add(new ArrayDeque<>());
+		foundations.add(new CardStack());
+		foundations.add(new CardStack());
+		foundations.add(new CardStack());
+		foundations.add(new CardStack());
 
 		tableaux = new ArrayList<>(7);
 		for (int i = 1; i <= 7; i++) {
@@ -57,14 +57,14 @@ public class KlondikeGame {
 			List<Card> current = tableaux.get(i - 1);
 
 			for (int j = 0; j < i; j++)
-				current.addFirst(deck.removeFirst());
+				current.addFirst(deck.pop());
 
 			// flip top card face-up
 			current.getFirst().flip();
 		}
 
-		while (!deck.isEmpty())
-			stockPile.addFirst(deck.removeFirst());
+		while (!deck.empty())
+			stockPile.push(deck.pop());
 	}
 
 	public KlondikeGame() {
@@ -80,13 +80,13 @@ public class KlondikeGame {
 	public KlondikeGame copy() {
 		KlondikeGame copy = new KlondikeGame(this.seed);
 
-		copy.stockPile = new ArrayDeque<>();
+		copy.stockPile = new CardStack();
 		copy.stockPile.addAll(this.stockPile);
-		copy.wastePile = new ArrayDeque<>();
+		copy.wastePile = new CardStack();
 		copy.wastePile.addAll(this.wastePile);
 		copy.foundations = new ArrayList<>(4);
 		for (int i = 0; i < 4; i++) {
-			copy.foundations.add(new ArrayDeque<>());
+			copy.foundations.add(new CardStack());
 			copy.foundations.get(i).addAll(this.foundations.get(i));
 		}
 		copy.tableaux = new ArrayList<>(7);
@@ -101,29 +101,29 @@ public class KlondikeGame {
 
 	// *** actionable methods ***
 	public void drawFromStockPile() {
-		if (!stockPile.isEmpty()) {
-			wastePile.addFirst(stockPile.removeFirst());
-			wastePile.getFirst().flip();
+		if (!stockPile.empty()) {
+			wastePile.push(stockPile.pop());
+			wastePile.peek().flip();
 		}
 	}
 
 	public void recycleWasteIntoStock() {
-		if (stockPile.isEmpty())
-			while (!wastePile.isEmpty())
-				stockPile.addFirst(wastePile.removeFirst());
+		if (stockPile.empty())
+			while (!wastePile.empty())
+				stockPile.push(wastePile.pop());
 	}
 
 	/// @return true if the stock pile card was moved to a foundation,
 	/// 	or false if no foundation can accept the stock pile card.
 	public boolean moveWasteCardToAFoundation() {
-		if (wastePile.isEmpty())
+		if (wastePile.empty())
 			return false;
 
-		int index = findAcceptableFoundationForCard(wastePile.getFirst());
+		int index = findAcceptableFoundationForCard(wastePile.peek());
 		if (index == -1)
 			return false;
 
-		foundations.get(index).addFirst(wastePile.removeFirst());
+		foundations.get(index).push(wastePile.pop());
 		return true;
 	}
 
@@ -138,10 +138,10 @@ public class KlondikeGame {
 	}
 
 	private boolean foundationCanAcceptCard(Card cardToAccept, int foundationIndex) {
-		if (foundations.get(foundationIndex).isEmpty())
+		if (foundations.get(foundationIndex).empty())
 			return cardToAccept.face() == Card.Face.ACE;
 
-		Card topCard = foundations.get(foundationIndex).getFirst();
+		Card topCard = foundations.get(foundationIndex).peek();
 
 		if (cardToAccept.suit() != topCard.suit())
 			return false;
@@ -156,23 +156,10 @@ public class KlondikeGame {
 		if (!(obj instanceof KlondikeGame klondike))
 			return false;
 
-		// foundations is a difficult check
-		boolean allButFoundations = this.seed == klondike.seed
-				&& Deck.equals(this.stockPile, klondike.stockPile)
-				&& Deck.equals(this.wastePile, klondike.wastePile)
-				&& this.tableaux.equals(klondike.tableaux);
-
-		if (!allButFoundations)
-			return false;
-
-		for (int i = 0; i < 4; i++) {
-			if (!Deck.equals(
-					this.foundations.get(i),
-					klondike.foundations.get(i)
-			))
-				return false;
-		}
-
-		return true;
+		return this.seed == klondike.seed
+				&& this.stockPile.equals(klondike.stockPile)
+				&& this.wastePile.equals(klondike.wastePile)
+				&& this.tableaux.equals(klondike.tableaux)
+				&& this.foundations.equals(klondike.foundations);
 	}
 }
