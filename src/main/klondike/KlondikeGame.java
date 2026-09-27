@@ -9,8 +9,8 @@ import java.util.Random;
 import java.util.Stack;
 
 public class KlondikeGame {
-	// for informational purposes
-	long seed;
+	// stored for informational purposes
+	public final long seed;
 
 	// piles
 	Stack<Card> stock;
@@ -51,6 +51,32 @@ public class KlondikeGame {
 	public KlondikeGame() {
 		long seed = System.currentTimeMillis();
 		this(seed);
+	}
+
+	/// similarly to [clone()][Object#clone()],
+	/// this creates and returns a deep copy of the game in its current state.
+	///
+	/// particularly useful for algorithmically solving a game
+	/// when there are multiple possible moves.
+	public KlondikeGame copy() {
+		KlondikeGame copy = new KlondikeGame(this.seed);
+
+		copy.stock = new Stack<>();
+		copy.stock.addAll(this.stock);
+		copy.wastePile = new Stack<>();
+		copy.wastePile.addAll(this.wastePile);
+		copy.foundations = new ArrayList<>(4);
+		for (int i = 0; i < 4; i++) {
+			copy.foundations.add(new Stack<>());
+			copy.foundations.get(i).addAll(this.foundations.get(i));
+		}
+		copy.tableaux = new ArrayList<>(7);
+		for (int i = 0; i < 7; i++) {
+			copy.tableaux.add(new Stack<>());
+			copy.tableaux.get(i).addAll(this.tableaux.get(i));
+		}
+
+		return copy;
 	}
 
 

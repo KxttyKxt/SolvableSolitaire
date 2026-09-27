@@ -186,4 +186,15 @@ class KlondikeGameTest {
 		// wastePile is the same
 		assertTrue(klondike.wastePile.empty());
 	}
+
+
+	@Test
+	// since Klondike#copy() makes a deep copy,
+	// that copy should fulfill the same conventions as `Object.clone()`.
+	void testCopyFollowsCloneConventions() {
+		KlondikeGame copy = klondike.copy();
+		assertEquals(copy.getClass(), klondike.getClass());
+		assertNotSame(copy, klondike);
+		assertEquals(copy, klondike);
+	}
 }
