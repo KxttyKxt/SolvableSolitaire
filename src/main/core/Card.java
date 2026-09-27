@@ -5,14 +5,41 @@ public class Card {
 	private final Face face;
 	private boolean facingUp;
 
+	/// making this true is an irreversible action
+	private boolean flagImmutable;
+
 	Card(Suit suit, Face face, boolean facingUp) {
 		this.suit = suit;
 		this.face = face;
 		this.facingUp = facingUp;
+		flagImmutable = false;
 	}
 
 	Card(Suit suit, Face face) {
 		this(suit, face, false);
+	}
+
+	Card() {
+		this(Suit.HEARTS, Face.ACE);
+	}
+
+
+	/// returns an immutable copy of this card.
+	/// making a card immutable is an irreversible action.
+	///
+	/// once a card is made immutable, certain methods will throw an
+	/// [`UnsupportedOperationException`.][UnsupportedOperationException]
+	/// [Flipping a card][Card#flip()] is an example of this.
+	///
+	/// immutable cards are used to share information about a Game's
+	/// state while making sure that shared cards aren't mutated improperly.
+	/// more specifically, games like [Klondike][klondike.KlondikeGame]
+	/// share card information for display to the user so that they can plan
+	/// their next move.
+	Card makeImmutable() {
+		Card immutable = new Card(this.suit, this.face, this.facingUp);
+		immutable.flagImmutable = true;
+		return immutable;
 	}
 	
 
@@ -26,9 +53,20 @@ public class Card {
 	public boolean facingUp() {
 		return facingUp;
 	}
+	public boolean isImmutable() {
+		return flagImmutable;
+	}
 	
 
+	/// flip a card over.
+	/// if the card was face-up, it will now be face-down, and vice versa.
+	///
+	/// @throws UnsupportedOperationException if the card is
+	/// [immutable][Card#makeImmutable()]
 	public void flip() {
+		if (flagImmutable) {
+			throw new UnsupportedOperationException("An immutable card cannot be flipped.");
+		}
 		facingUp = !facingUp;
 	}
 
