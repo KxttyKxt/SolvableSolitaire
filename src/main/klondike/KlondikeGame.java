@@ -116,6 +116,41 @@ public class KlondikeGame {
 	}
 
 
+	/// @return true if the stock pile card was moved to a foundation,
+	/// 	or false if no foundation can accept the stock pile card.
+	public boolean moveWasteCardToAFoundation() {
+		if (wastePile.empty())
+			return false;
+
+		int index = findAcceptableFoundationForCard(wastePile.peek());
+		if (index == -1)
+			return false;
+
+		foundations.get(index).add(wastePile.pop());
+		return true;
+	}
+
+	private int findAcceptableFoundationForCard(Card cardToAccept) {
+		for (int i = 0; i < 4; i++)
+			if (foundationCanAcceptCard(cardToAccept, i))
+				return i;
+
+		return -1;
+	}
+
+	private boolean foundationCanAcceptCard(Card cardToAccept, int foundationIndex) {
+		if (foundations.get(foundationIndex).empty())
+			return cardToAccept.face() == Card.Face.ACE;
+
+		Card topCard = foundations.get(foundationIndex).peek();
+
+		if (cardToAccept.suit() != topCard.suit())
+			return false;
+		else
+			return cardToAccept.face().value == topCard.face().value + 1;
+	}
+
+
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof KlondikeGame klondike))

@@ -8,18 +8,18 @@ public class Card {
 	/// making this true is an irreversible action
 	private boolean flagImmutable;
 
-	Card(Suit suit, Face face, boolean facingUp) {
+	public Card(Suit suit, Face face, boolean facingUp) {
 		this.suit = suit;
 		this.face = face;
 		this.facingUp = facingUp;
 		flagImmutable = false;
 	}
 
-	Card(Suit suit, Face face) {
+	public Card(Suit suit, Face face) {
 		this(suit, face, false);
 	}
 
-	Card() {
+	public Card() {
 		this(Suit.HEARTS, Face.ACE);
 	}
 
